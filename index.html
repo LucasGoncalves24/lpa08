@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			/* Reset básico */
+			* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+			}
+			
+			/* Estilização do corpo da página */
+			body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background-color: #f4f4f9;
+			color: #333;
+			line-height: 1.6;
+			padding: 20px;
+			}
+			
+			/* Container principal */
+			.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background: #fff;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+			}
+			
+			/* Estilização dos parágrafos e inputs */
+			.container p {
+			margin-bottom: 15px;
+			}
+			
+			.container p label {
+			display: block;
+			font-weight: bold;
+			margin-bottom: 5px;
+			}
+			
+			.container input[type="number"] {
+			width: 100%;
+			padding: 10px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			font-size: 16px;
+			}
+			
+			/* Estilização do botão */
+			.container button {
+			display: inline-block;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px 20px;
+			font-size: 16px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+			}
+			
+			.container button:hover {
+			background-color: #0056b3;
+			}
+			
+			/* Estilização dos textos de resultado */
+			#retalho,
+			#bobinaIdeal,
+			#tamanhoCorte,
+			#tamanhoLateral,
+			#angulo_corte{
+			font-size: 18px;
+			font-weight: bold;
+			margin-top: 10px;
+			}
+			
+			/* Estilização do canvas */
+			canvas {
+			display: block;
+			margin: 20px auto;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			}
+			
+			
+			@media	(max-width:	1500px)	{
+				/*	estilos	para	mobile	*/
+				/* Estilização dos textos de resultado */
+				#retalho,
+				#bobinaIdeal,
+				#tamanhoCorte,
+				#tamanhoLateral,
+				#angulo_corte{
+				font-size: 50px;
+				}
+				
+				.container p label {
+				font-size: 50px;
+				}
+				
+				/* Container principal */
+				.container {
+					max-width: 100%;
+				}
+				
+				.container input[type="number"] {
+					font-size: 50px;
+				}
+				
+				/* Estilização do botão */
+				.container button {
+					margin: 50px auto;
+					font-size: 50px;
+					display: flex;
+				}
+				
+				/* Estilização do canvas */
+				#meu_canvas {
+					width: 800px;
+					height: 2000px;
+				}
+			}
+			
+		</style>
+		
+	</head>
+	<body>
+		<div ><!--style="display: flex;"-->
+			<div class="container">
+				<p>
+					<label for="bobina">Bobina:</label>
+					<input id="bobina" type="number" value="1200">
+				</p>
+				<p>
+					<label for="baseMenor">Base Menor:</label>
+					<input id="baseMenor" type="number" value="391">
+				</p>
+				<p>
+					<label for="baseMaior">Base Maior:</label>
+					<input id="baseMaior" type="number" value="969">
+				</p>
+				<p>
+					<label for="comprimento">Comprimento:</label>
+					<input id="comprimento" type="number" value="6947">
+				</p>
+				<p>
+					<button id="calcular">Calcular</button>
+				</p>
+				<p id="bobinaIdeal">Bobina Ideal:</p>
+				<p id="angulo_corte">Angulo de Corte:</p>
+				<p id="retalho">Corte de Limpeza:</p>
+				<p id="tamanhoLateral">Retalho Lateral:</p>
+				<p id="tamanhoCorte">Tamanho do Corte:</p>
+			</div>
+			<canvas id="meu_canvas" width="500" height="2000" style="border:1px solid black;"></canvas>
+		</div>
+		<script>
+			
+			// Obter o elemento canvas e o contexto 2D
+			var canvas = document.getElementById('meu_canvas');
+			var context = canvas.getContext('2d');
+			
+			var scale = 5;
+			var centerX = 5; // Coordenada X do centro
+			var centerY = 5; // Coordenada Y do centro
+			
+			document.getElementById('calcular').addEventListener('click', function () {
+			
+			
+			
+			
+			var bobina = parseFloat(document.getElementById('bobina').value);
+			var tamanhoMenor = parseFloat(document.getElementById('baseMenor').value);
+			var tamanhoMaior = parseFloat(document.getElementById('baseMaior').value);
+			var comprimento = parseFloat(document.getElementById('comprimento').value);
+			var retalhoTxt = document.getElementById('retalho');
+			var bobinaIdealTxt = document.getElementById('bobinaIdeal');
+			var tamanhoCorteChapa = document.getElementById('tamanhoCorte');
+			var tamanhoCorteLateral = document.getElementById('tamanhoLateral');
+			var angulo_corte = document.getElementById('angulo_corte');
+			
+			var AnguloCorte = Math.atan(((tamanhoMaior - tamanhoMenor)/2) / comprimento) * (180 / Math.PI);
+			var TamanhoCorte = comprimento / Math.cos((AnguloCorte * Math.PI) / 180);
+			
+			var inicioCorte = (((bobina / Math.cos((AnguloCorte * Math.PI) / 180)) - tamanhoMaior) * bobina) / (bobina / Math.cos((AnguloCorte * Math.PI) / 180));
+			var finalCorte =  (((bobina / Math.cos((AnguloCorte * Math.PI) / 180)) - inicioCorte) * bobina) / (bobina / Math.cos((AnguloCorte * Math.PI) / 180));
+			
+			var inicioCorte2 = ((bobina / Math.cos((AnguloCorte * Math.PI) / 180)) - tamanhoMaior);
+			var finalCorte3 = ((bobina / Math.cos((AnguloCorte * Math.PI) / 180)) - tamanhoMenor);
+			var finalCorte2 = bobina - inicioCorte;
+			
+			var chapa2Peca = (tamanhoMaior + tamanhoMenor) * Math.cos((AnguloCorte * Math.PI) / 180);
+			
+			var retalho = (((tamanhoMaior - inicioCorte2) / 2) / Math.sin((AnguloCorte * Math.PI) / 180)) - TamanhoCorte;
+			var compRetalho = retalho * Math.cos((AnguloCorte * Math.PI) / 180);
+			var pesoRetalho = (((((tamanhoMenor + inicioCorte2) * compRetalho) / 2) * 0.8) / 1000000000) * 7850;
+			
+			var pesoRetalho2 = ((((((inicioCorte2 * 2) + (finalCorte3 * 2)) * TamanhoCorte) / 2) * 0.8) / 1000000000) * 7850;
+			
+			var retalho2 = Math.sqrt((retalho * retalho)-(((tamanhoMenor-inicioCorte2)/2)* ((tamanhoMenor-inicioCorte2)/2)));
+			
+			
+			
+			/*
+				console.log("Hipotenusa " + bobina / Math.cos((AnguloCorte * Math.PI) / 180));
+				console.log("Cateto Adjacente " + ((tamanhoMaior - tamanhoMenor)/2) / Math.tan((AnguloCorte * Math.PI) / 180));
+				console.log("Cateto Oposto " + Math.tan((AnguloCorte * Math.PI) / 180) * comprimento);
+			*/
+			
+			// Limpa o canvas inteiro
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			
+			
+			console.log("Tamanho da Bobina: " + bobina);
+			console.log("Angulo de Corte: " + AnguloCorte);
+			console.log("Lado Menor: " + tamanhoMenor);
+			console.log("Lado Maior: " + tamanhoMaior);
+			console.log("Comprimento: " + comprimento);
+			console.log("Inicio do Corte: " + inicioCorte);
+			console.log("Final do Corte: " + finalCorte);
+			console.log("Tamanho do Corte: " + TamanhoCorte);
+			console.log("Chapa Para 2 Peças: " + chapa2Peca);
+			console.log("Corte de Limpeza: " + retalho);
+			console.log("inicioCorte2: " + inicioCorte2);
+			console.log("finalCorte2: " + finalCorte2);
+			console.log("Corte de Limpeza2: " + retalho2);
+			
+			
+			if( tamanhoMenor * 2 <= bobina && retalho > -0){
+				
+				var total = TamanhoCorte + retalho
+				
+				tamanhoCorteChapa.innerHTML = "Tamanho do Corte: " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
+				retalhoTxt.innerHTML = "Corte de Limpeza: " + retalho2.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
+				//+ ' e ' + pesoRetalho.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+				tamanhoCorteLateral.innerHTML = "Retalho Lateral: 0 kg";
+				
+				}else{
+				
+				retalhoTxt.innerHTML = "Corte de Limpeza: 0,00mm";
+				tamanhoCorteChapa.innerHTML = "Tamanho do Corte: " + TamanhoCorte.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
+				
+				var kilo = pesoRetalho2 / 2 ;
+				tamanhoCorteLateral.innerHTML = "Retalho Lateral: " + kilo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+			}
+			
+			
+			bobinaIdealTxt.innerHTML = "Bobina Ideal: " + chapa2Peca.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
+			angulo_corte.innerHTML = "Angulo de Corte: " + AnguloCorte.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'º';
+			
+			
+			
+			
+			if(retalho > comprimento){
+				console.log("Quantidades de Peças: 1 un");
+				}else{
+				console.log("Quantidades de Peças: 2 un");
+			}
+			
+			
+			var larguraMp = bobina / Math.cos((AnguloCorte * Math.PI) / 180);
+			var tamanhoMp;
+			
+			//Faz a Verificação do Tamanho do Retalho de Limpeza da Peça
+			if(retalho < comprimento && larguraMp > tamanhoMaior){
+				tamanhoMp = (TamanhoCorte + (Math.tan((AnguloCorte * Math.PI) / 180) * bobina)) + retalho;
+				}else{
+				tamanhoMp = (TamanhoCorte + (Math.tan((AnguloCorte * Math.PI) / 180) * bobina));
+			}
+			
+			//Printa a Peça
+			telha(tamanhoMenor, tamanhoMaior, comprimento, scale, (AnguloCorte * -1), centerX, (centerY + (tamanhoMp / scale)));
+			
+			//Printa o Esbolço da Materia Prima
+			chapa(bobina,  tamanhoMp, centerX, centerY, scale);
+			
+			//Verifica se Cabe Mais Uma Peça na Materia Prima
+			if(retalho < comprimento && larguraMp > tamanhoMaior){
+				telha(tamanhoMenor, tamanhoMaior, comprimento, scale, (180 - AnguloCorte), (centerX + (bobina / scale)), centerY);
+			}
+			
+			
+			// Exemplo com seus dados
+			const baseMenor = 391;
+			const altura = 6947;
+			const anguloInferiorEsquerdo = 92.5;
+			const anguloInferiorDireito  = 92.38;
+			/*
+				const anguloInferiorEsquerdo = 90 + AnguloCorte + 0.06;
+				const anguloInferiorDireito  = 90 + AnguloCorte;
+			*/
+			const resultado = calcularBaseMaiorPorAngulos(baseMenor, altura, anguloInferiorEsquerdo, anguloInferiorDireito);
+			console.log("Base maior calculada:", resultado.toFixed(2), "mm");
+			
+			
+		});	
+		
+		
+		/*
+			var inicioFrente = 31;
+			var inicioFim = 100;
+			var qtdFuros420 = 11;
+			var distanciaPadrao = 420;
+			var furos = [200, 183];
+			var pistaoFuracao = [0, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+			var pistao1, pistao2, pistao3, pistao4;
+			var furosFaltantes420;
+			
+			if((qtdFuros420 % 2) > 0 ){
+			pistao1 = "Punção 9 á " + pistaoFuracao[((qtdFuros420 + 1)/2) + 1] + " com " + inicioFim + "mm";
+			console.log("Pistão 1: " + pistao1);
+			
+			furosFaltantes420 = qtdFuros420 - (((qtdFuros420 + 1)/2));
+			
+			pistao2 = "Punção 9 á " + pistaoFuracao[furosFaltantes420 + 1] + " com " + distanciaPadrao + "mm";
+			console.log("Pistão 2: " + pistao2);
+			
+			if(furos.length > 0){
+			pistao3 = pistaoFuracao[furosFaltantes420 + 1] + " com " + (distanciaPadrao + furos[1]) + "mm";
+			console.log("Pistão 3: Punção " + pistao3);
+			
+			pistao4 = pistaoFuracao[furosFaltantes420 + 1] + " com " + furos[0] + "mm";
+			console.log("Pistão 4: Punção " + pistao4);
+			}
+			}
+			
+			if((qtdFuros420 % 2) == 0){
+			
+			pistao1 = "Punção 10 á " + pistaoFuracao[qtdFuros420/2] + " com " + inicioFim + "mm";
+			console.log("Pistão 1: " + pistao1);
+			
+			pistao2 = "Punção 10 á " + pistaoFuracao[qtdFuros420/2] + " com " + distanciaPadrao + "mm";
+			console.log("Pistão 2: " + pistao2);
+			
+			furosFaltantes420 = pistaoFuracao[qtdFuros420/2];
+			
+			if(furos.length > 0){
+			pistao3 = furosFaltantes420 + " com " + furos[1] + "mm";
+			console.log("Pistão 3: Punção " + pistao3);
+			
+			pistao4 = furosFaltantes420 + " com " + furos[0] + "mm";
+			console.log("Pistão 4: Punção " + pistao4);
+			}
+			}
+			
+		*/
+		
+		
+		
+		//Função para Desenhar a Peça 
+		function telha(baseMenor, baseMaior, altura, scale, rotation, x, y) {
+			
+			var centerX = x; // Coordenada X do centro
+			var centerY = y; // Coordenada Y do centro
+			var angulo = rotation * (Math.PI / 180);
+			
+			// Coordenadas originais
+			var x1 = centerX;
+			var y1 = centerY;
+			
+			var x2 = centerX + (baseMaior / scale);
+			var y2 = centerY;
+			
+			var x3 = centerX + ((baseMenor + ((baseMaior - baseMenor) / 2)) / scale);
+			var y3 = centerY - (altura / scale);
+			
+			var x4 = centerX + (((baseMaior - baseMenor) / 2) / scale);
+			var y4 = centerY - (altura / scale);
+			
+			
+			// Função para rotacionar um ponto
+			function rotatePoint(x, y, cx, cy, angle) {
+				var cosTheta = Math.cos(angle);
+				var sinTheta = Math.sin(angle);
+				var xRotated = (x - cx) * cosTheta - (y - cy) * sinTheta + cx;
+				var yRotated = (x - cx) * sinTheta + (y - cy) * cosTheta + cy;
+				return { x: xRotated, y: yRotated };
+			}
+			
+			// Rotacionar os pontos
+			var p1 = rotatePoint(x1, y1, centerX, centerY, angulo);
+			var p2 = rotatePoint(x2, y2, centerX, centerY, angulo);
+			var p3 = rotatePoint(x3, y3, centerX, centerY, angulo);
+			var p4 = rotatePoint(x4, y4, centerX, centerY, angulo);
+			
+			// Desenhar o trapézio rotacionado
+			context.beginPath();
+			context.moveTo(p1.x, p1.y); // Começa
+			context.lineTo(p2.x, p2.y); // Base maior
+			context.lineTo(p3.x, p3.y); // Altura
+			context.lineTo(p4.x, p4.y); // Base menor
+			context.lineTo(p1.x, p1.y); // Final
+			
+			context.closePath(); // Fechar o caminho
+			
+			// Estilizar e desenhar
+			context.strokeStyle = 'blue'; // Cor da linha
+			context.fillStyle = 'lightblue'; // Cor do preenchimento
+			context.lineWidth = 2; // Espessura da linha
+			
+			context.stroke(); // Desenhar o contorno
+			context.fill();   // Preencher o trapézio
+		}
+		
+		//Função para Desenha a Materia Prima
+		function chapa(bobina, comprimento, x, y, scale){
+			var centerX = x; // Coordenada X do centro
+			var centerY = y; // Coordenada Y do centro
+			
+			// Coordenadas originais
+			var x1 = centerX;
+			var y1 = centerY;
+			
+			var x2 = centerX + (bobina / scale);
+			var y2 = centerY + (comprimento / scale);
+			
+			//context.beginPath();
+			context.moveTo(centerX, centerY);
+			context.lineTo(x2, centerY);
+			context.lineTo(x2, y2);
+			context.lineTo(centerX, y2);
+			
+			context.closePath(); // Fechar o caminho
+			context.stroke(); // Desenhar o contorno
+			
+		}
+		
+		
+		function calcularEntrada(x1, y1, x2, y2, yDesejado) {
+			// Calcula coeficiente angular (a)
+			const a = (y2 - y1) / (x2 - x1);
+			
+			// Calcula coeficiente linear (b)
+			const b = y1 - a * x1;
+			
+			// Calcula o valor de entrada x correspondente ao y desejado
+			const xDesejado = (yDesejado - b) / a;
+			
+			return xDesejado;
+		}
+		
+		// Exemplo de uso:
+		const x1 = -0.4;
+		const y1 = 1243;
+		const x2 = -0.6;
+		const y2 = 1234;
+		const yDesejado = 1231;
+		
+		const resultado = calcularEntrada(x1, y1, x2, y2, yDesejado);
+		console.log("Valor de entrada para y = 1231:", resultado.toFixed(2));
+		
+		
+		function calcularBaseMaiorPorAngulos(baseMenor, altura, anguloEsquerdo, anguloDireito) {
+			const rad = Math.PI / 180;
+			
+			// Converter os ângulos para deslocamento lateral (em relação à vertical)
+			const deslocamentoEsquerdo = Math.tan((anguloEsquerdo - 90) * rad);
+			const deslocamentoDireito  = Math.tan((anguloDireito - 90) * rad);
+			
+			// Calcular base maior
+			const baseMaior = baseMenor + altura * deslocamentoEsquerdo + altura * deslocamentoDireito;
+			
+			return baseMaior;
+		}
+		
+		
+		
+		
+		
+		</script>
+	</body>
+</html>			
