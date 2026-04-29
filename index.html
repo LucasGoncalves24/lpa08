@@ -69,7 +69,9 @@
 			#bobinaIdeal,
 			#tamanhoCorte,
 			#tamanhoLateral,
-			#angulo_corte{
+			#angulo_corte,
+			#angulo_tesoura,
+			#tamanho_final{
 			font-size: 18px;
 			font-weight: bold;
 			margin-top: 10px;
@@ -92,7 +94,9 @@
 				#bobinaIdeal,
 				#tamanhoCorte,
 				#tamanhoLateral,
-				#angulo_corte{
+				#angulo_corte,
+				#angulo_tesoura,
+				#tamanho_final{
 				font-size: 50px;
 				}
 				
@@ -148,11 +152,22 @@
 				<p>
 					<button id="calcular">Calcular</button>
 				</p>
+				<hr>
+				<br>
 				<p id="bobinaIdeal">Bobina Ideal:</p>
 				<p id="angulo_corte">Angulo de Corte:</p>
+				<p id="angulo_tesoura">Angulo da Tesoura:</p>
 				<p id="retalho">Corte de Limpeza:</p>
 				<p id="tamanhoLateral">Retalho Lateral:</p>
 				<p id="tamanhoCorte">Tamanho do Corte:</p>
+				<br>
+				<hr>
+				<p>
+					<label for="anglo_Tesoura">Angulo da Tesoura:</label>
+					<input id="anglo_Tesoura" type="number" value="">
+				</p>
+				<p id="tamanho_final">Tamanho Final:</p>
+				
 			</div>
 			<canvas id="meu_canvas" width="500" height="2000" style="border:1px solid black;"></canvas>
 		</div>
@@ -175,11 +190,17 @@
 			var tamanhoMenor = parseFloat(document.getElementById('baseMenor').value);
 			var tamanhoMaior = parseFloat(document.getElementById('baseMaior').value);
 			var comprimento = parseFloat(document.getElementById('comprimento').value);
+			var anguloTesouraTes = parseFloat(document.getElementById('anglo_Tesoura').value);
+			
+			
 			var retalhoTxt = document.getElementById('retalho');
 			var bobinaIdealTxt = document.getElementById('bobinaIdeal');
 			var tamanhoCorteChapa = document.getElementById('tamanhoCorte');
 			var tamanhoCorteLateral = document.getElementById('tamanhoLateral');
 			var angulo_corte = document.getElementById('angulo_corte');
+			var angulo_tesoura = document.getElementById('angulo_tesoura');
+			var tamanho_final = document.getElementById('tamanho_final');
+			
 			
 			var AnguloCorte = Math.atan(((tamanhoMaior - tamanhoMenor)/2) / comprimento) * (180 / Math.PI);
 			var TamanhoCorte = comprimento / Math.cos((AnguloCorte * Math.PI) / 180);
@@ -202,6 +223,18 @@
 			var retalho2 = Math.sqrt((retalho * retalho)-(((tamanhoMenor-inicioCorte2)/2)* ((tamanhoMenor-inicioCorte2)/2)));
 			
 			
+			var anguloTesoura = (90 + AnguloCorte) - (90 - AnguloCorte);
+			
+			var c_o = (TamanhoCorte + retalho) * (Math.tan(anguloTesouraTes * (Math.PI / 180)));
+			var anguloTopo = 180 - 90 - anguloTesouraTes;
+			var anguloFrente = 180 - anguloTopo - AnguloCorte;
+			var tamanhoParte = c_o * (Math.sin(anguloTopo * (Math.PI / 180)) / Math.sin(anguloFrente * (Math.PI / 180)));
+			var tamTanPe = inicioCorte / Math.cos(AnguloCorte * (Math.PI / 180));
+			var tamCortFinal = tamTanPe + tamanhoParte;
+			
+			
+			console.log(tamCortFinal);
+
 			
 			/*
 				console.log("Hipotenusa " + bobina / Math.cos((AnguloCorte * Math.PI) / 180));
@@ -238,7 +271,7 @@
 				//+ ' e ' + pesoRetalho.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
 				tamanhoCorteLateral.innerHTML = "Retalho Lateral: 0 kg";
 				
-				}else{
+			}else{
 				
 				retalhoTxt.innerHTML = "Corte de Limpeza: 0,00mm";
 				tamanhoCorteChapa.innerHTML = "Tamanho do Corte: " + TamanhoCorte.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
@@ -250,6 +283,8 @@
 			
 			bobinaIdealTxt.innerHTML = "Bobina Ideal: " + chapa2Peca.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
 			angulo_corte.innerHTML = "Angulo de Corte: " + AnguloCorte.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'º';
+			angulo_tesoura.innerHTML = "Angulo da Tesoura: " + anguloTesoura.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'º';
+			tamanho_final.innerHTML = "Tamanh Final: " + tamCortFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mm';
 			
 			
 			
@@ -472,4 +507,4 @@
 		
 		</script>
 	</body>
-</html>			
+</html>
